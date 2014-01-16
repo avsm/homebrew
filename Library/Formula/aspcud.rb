@@ -68,4 +68,22 @@ FreeBSD SVN: http://svnweb.freebsd.org/ports/head/math/aspcud/files/patch-libcud
  
  # default options
  clasp_opts_def=( "--opt-heu=1" "--sat-prepro" "--restarts=L,128" "--heuristic=VSIDS" "--opt-hierarch=1" "--local-restarts" "--del-max=200000,250" "--save-progress=0" )
+@@ -125,8 +125,16 @@
+ [[ ${#gringo_opts[*]} -eq 0 ]] && gringo_opts=( "${gringo_opts_def[@]}" )
+ clasp_opts=( "${clasp_opts[@]}" "${clasp_opts_implicit[@]}" )
+ 
++trendycriterion="-count(removed),-notuptodate(solution),-unsat_recommends(solution),-count(new)"
++
++if [[ $3 == trendy ]]; then
++    criterion=$trendycriterion;
++else
++    criterion=`echo $3 | sed -E -e 's/([+-])(new|removed|changed)/\1count(\2)/g' -e 's/([+-])(notuptodate|unsat_recommends)([^(]|$)/\1\2(solution)\3/g' -e 's/([+-])sum(([a-z]*))/\1sum(\2,solution)/g'`
++fi
++
+ if [[ $# -eq 3 ]]; then
+-	cudf_opts=( "${cudf_opts[@]}" "-c" "$3" )
++	cudf_opts=( "${cudf_opts[@]}" "-c" "$criterion" )
+ elif echo $(basename "$0") | grep -q "paranoid"; then
+ 	[[ $# -ne 2 ]] && { die "error: exactly two arguments expected"; }
+ 	cudf_opts=( "${cudf_opts[@]}" "-c" "paranoid" )
 
